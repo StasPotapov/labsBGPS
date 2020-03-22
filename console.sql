@@ -43,7 +43,7 @@ CREATE TABLE journal
     id INT NOT NULL,
     study_plan_id INT NOT NULL,
     mark_id INT NOT NULL,
-    journal_id INT NOT NULL,
+    student_id INT NOT NULL,
     count INT NULL,
     in_time BIT NULL,
     PRIMARY KEY (id)
