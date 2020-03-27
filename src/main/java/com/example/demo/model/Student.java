@@ -4,15 +4,15 @@ public class Student {
     private int id;
     private String surname;
     private String name;
-    private String secondName;
-    private int studyGroupId;
+    private String second_name;
+    private int study_group_id;
 
-    public Student(int id, String surname, String name, String secondName, int studyGroupId) {
+    public Student(int id, String surname, String name, String second_name, int study_group_id) {
         this.id = id;
         this.surname = surname;
         this.name = name;
-        this.secondName = secondName;
-        this.studyGroupId = studyGroupId;
+        this.second_name = second_name;
+        this.study_group_id = study_group_id;
     }
 
     public int getId() {
@@ -39,19 +39,19 @@ public class Student {
         this.name = name;
     }
 
-    public String getSecondName() {
-        return secondName;
+    public String getSecond_name() {
+        return second_name;
     }
 
-    public void setSecondName(String secondName) {
-        this.secondName = secondName;
+    public void setSecond_name(String second_name) {
+        this.second_name = second_name;
     }
 
-    public int getStudyGroupId() {
-        return studyGroupId;
+    public int getStudy_group_id() {
+        return study_group_id;
     }
 
-    public void setStudyGroupId(int studyGroupId) {
-        this.studyGroupId = studyGroupId;
+    public void setStudy_group_id(int study_group_id) {
+        this.study_group_id = study_group_id;
     }
 }

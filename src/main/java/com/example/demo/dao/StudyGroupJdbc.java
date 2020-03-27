@@ -4,54 +4,57 @@ import com.example.demo.model.StudyGroup;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @Repository
 public class StudyGroupJdbc {
     private final JdbcTemplate jdbcTemplate;
-    private final SimpleJdbcInsert simpleJdbcInsert;
 
-    public StudyGroupJdbc(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.simpleJdbcInsert = new SimpleJdbcInsert(dataSource)
-                .withTableName("study_group")
-                .usingGeneratedKeyColumns("id");
+    public StudyGroupJdbc(JdbcTemplate jdbcTemplate){
+        this.jdbcTemplate = jdbcTemplate;
     }
 
-    public StudyGroup get(int id) {
-        return jdbcTemplate.queryForObject("SELECT * FROM STUDY_GROUP WHERE id = ?", this::mapStudyGroup, id);
+    public StudyGroup get(int id){
+        return jdbcTemplate.queryForObject("SELECT * FROM study_group WHERE id = ?", this::mapStudyGroup, id);
     }
 
-    public List<StudyGroup> getAll() {
-        return jdbcTemplate.query("SELECT * FROM STUDY_GROUP", this::mapStudyGroup);
+    public List<StudyGroup> getAll(){
+        return jdbcTemplate.query("SELECT * FROM study_group", ROW_MAPPER);
     }
 
-    public int create(StudyGroup studyGroup) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("name", studyGroup.getName());
-        return simpleJdbcInsert.executeAndReturnKey(parameters).intValue();
-    }
+    public StudyGroup save(StudyGroup studyGroup) {
+        if (studyGroup.getId() == 0) {
+            Map<String, Object> parameters = new HashMap<String, Object>();
+            parameters.put("name", studyGroup.getName());
+            SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
+            jdbcInsert.withTableName("study_group").usingColumns("name").usingGeneratedKeyColumns("id");
+            int id = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters)).intValue();
+            studyGroup.setId(id);
+        } else {
+            jdbcTemplate.update("UPDATE study_group SET name = ?2 WHERE id = ?1", studyGroup.getId(), studyGroup.getName());
+        }
 
-    public int update(int id, StudyGroup studyGroup) {
-        return jdbcTemplate.update("UPDATE STUDY_GROUP SET name = ? WHERE id = ?",
-                studyGroup.getName(),
-                id);
+        return get(studyGroup.getId());
     }
-
     public int delete(int id) {
-        return jdbcTemplate.update("DELETE FROM STUDY_GROUP WHERE id = ?", id);
+        return jdbcTemplate.update("DELETE FROM study_group WHERE id = ?", id);
     }
 
-    private StudyGroup mapStudyGroup(ResultSet resultSet, int i) throws SQLException {
+    private StudyGroup mapStudyGroup(ResultSet rs, int i) throws SQLException
+    {
         return new StudyGroup(
-                resultSet.getInt("id"),
-                resultSet.getString("name")
+                rs.getInt("id"),
+                rs.getString("name")
         );
     }
+    RowMapper<StudyGroup> ROW_MAPPER = (ResultSet rs, int rowNum) -> {
+        return new StudyGroup(rs.getInt("id"), rs.getString("name"));
+    };
 }

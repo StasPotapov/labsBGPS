@@ -11,7 +11,7 @@ import java.sql.SQLException;
 public class MarkJdbc {
     private final JdbcTemplate jdbcTemplate;
 
-    public MarkJdbc(JdbcTemplate jdbcTemplate) {
+    public MarkJdbc(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -19,16 +19,18 @@ public class MarkJdbc {
         return jdbcTemplate.queryForObject("SELECT * FROM mark WHERE id = ?", this::mapMark, id);
     }
 
-    private Mark mapMark(ResultSet rs, int i) throws SQLException {
-        Mark mark = new Mark (
+    private Mark mapMark(ResultSet rs, int i) throws SQLException
+    {
+        Mark mark = new Mark(
                 rs.getInt("id"),
                 rs.getString("name"),
                 rs.getString("value")
+
         );
         return mark;
     }
 
-    public Mark search(String mark) {
+    public Mark search(String mark){
         return jdbcTemplate.queryForObject("SELECT * FROM mark WHERE name = ?", Mark.class, mark);
     }
 }

@@ -4,68 +4,77 @@ import com.example.demo.model.Student;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @Repository
 public class StudentJdbc {
     private final JdbcTemplate jdbcTemplate;
-    private final SimpleJdbcInsert simpleJdbcInsert;
 
-    public StudentJdbc(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.simpleJdbcInsert = new SimpleJdbcInsert(dataSource)
-                .withTableName("student")
-                .usingGeneratedKeyColumns("id");
+    public StudentJdbc(JdbcTemplate jdbcTemplate){
+        this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Student get(int id) {
+    public Student get(int id){
         return jdbcTemplate.queryForObject("SELECT * FROM student WHERE id = ?", this::mapStudent, id);
     }
 
-    public List<Student> getStudyGroupId(int study_group_id) {
-        return jdbcTemplate.query("SELECT * FROM STUDENT WHERE study_group_id = ?", this::mapStudent, study_group_id);
+    public List<Student> getAll(){
+        return jdbcTemplate.query("SELECT * FROM student", ROW_MAPPER);
     }
 
-    public List<Student> getAll() {
-        return jdbcTemplate.query("SELECT * FROM STUDENT", this::mapStudent);
+    public List<Student> getByStudyGroupId(int study_group_id){
+        return jdbcTemplate.query("SELECT * FROM student WHERE study_group_id = ?", ROW_MAPPER, study_group_id);
     }
 
-    public int create(Student student) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("surname", student.getSurname());
-        parameters.put("name", student.getName());
-        parameters.put("second_name", student.getSecondName());
-        parameters.put("study_group_id", student.getStudyGroupId());
-
-        return (int) simpleJdbcInsert.executeAndReturnKey(parameters).longValue();
+    public Student save(Student student) {
+        if (student.getId() == 0) {
+            Map<String, Object> parameters = new HashMap<String, Object>();
+            parameters.put("surname", student.getSurname());
+            parameters.put("name", student.getName());
+            parameters.put("second_name", student.getSecond_name());
+            parameters.put("study_group_id", student.getStudy_group_id());
+            SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
+            jdbcInsert.withTableName("student")
+                    .usingColumns("surname", "name", "second_name", "study_group_id")
+                    .usingGeneratedKeyColumns("id");
+            int id = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters)).intValue();
+            student.setId(id);
+        } else {
+            jdbcTemplate.update("UPDATE student SET surname = ?2, name = ?3, second_name = ?4, study_group_id = ?5 WHERE id = ?1",
+                    student.getId(), student.getSurname(), student.getName(), student.getSecond_name(), student.getStudy_group_id());
+        }
+        return get(student.getId());
     }
 
-    public int update(int id, Student student) {
-        return jdbcTemplate.update("UPDATE STUDENT SET surname = ?, name = ?, second_name = ?, study_group_id = ? WHERE id = ?",
-                student.getSurname(),
-                student.getName(),
-                student.getSecondName(),
-                student.getStudyGroupId(),
-                id);
-    }
 
     public int delete(int id) {
-        return jdbcTemplate.update("DELETE FROM STUDENT WHERE id = ?", id);
+        return jdbcTemplate.update("DELETE FROM student WHERE id = ?", id);
     }
 
-    private Student mapStudent(ResultSet resultSet, int i) throws SQLException {
+    private Student mapStudent(ResultSet rs, int i) throws SQLException
+    {
         return new Student(
-                resultSet.getInt("id"),
-                resultSet.getString("surname"),
-                resultSet.getString("name"),
-                resultSet.getString("second_name"),
-                resultSet.getInt("study_group_id")
+                rs.getInt("id"),
+                rs.getString("surname"),
+                rs.getString("name"),
+                rs.getString("second_name"),
+                rs.getInt("study_group_id")
         );
     }
+    RowMapper<Student> ROW_MAPPER = (ResultSet rs, int rowNum) -> {
+        return new Student(
+                rs.getInt("id"),
+                rs.getString("surname"),
+                rs.getString("name"),
+                rs.getString("second_name"),
+                rs.getInt("study_group_id")
+        );
+    };
 }
