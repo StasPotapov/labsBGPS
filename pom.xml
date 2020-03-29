@@ -11,7 +11,7 @@
     <groupId>com.example</groupId>
     <artifactId>demo</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>demo</name>
+    <name>labsBGPS</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>
@@ -51,6 +51,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>net.progruzovik.bus</groupId>
+            <artifactId>bus-datasource-spring-jdbc</artifactId>
+            <version>1.0-DEAN</version>
+        </dependency>
+        <dependency>
+            <groupId>net.progruzovik.bus</groupId>
+            <artifactId>bus-messaging-spring-rest</artifactId>
+            <version>1.0-DEAN</version>
+        </dependency>
+
     </dependencies>
 
     <build>
